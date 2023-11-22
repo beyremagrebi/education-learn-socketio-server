@@ -14,6 +14,17 @@ const io = require("socket.io")(8800, {
 const connectedUsers = new Map();
 // listen for connections to the socket.io server
 io.on("connection", (socket) => {
+    socket.on("newConnection", (userId) => {
+        console.log("new",userId);
+        connectedUsers.set(userId, {
+            userId: userId,
+            socketId: socket.id,
+            status: "online",
+        });
+        const connUsers = Array.from(connectedUsers.values());
+        io.emit("connectedUsers", connUsers);
+        console.log("new user connected")
+    })  
     console.log("connected to socket.io");
     // listen for the "setup" event, which is emitted by the client when they connect
     socket.on("setup", (userData) => {
@@ -21,12 +32,22 @@ io.on("connection", (socket) => {
         socket.join(userData._id);
         console.log(userData.firstName + " " + userData.lastName + " connected");
         // emit a "connected" event back to the client
-        socket.emit("connected");
+        socket.on("connected", ()=>{
+           return connectedUsers.set(userData._id,{
+                userId:userData._id,
+                socketId: socket.id,
+                status: "online",
+            });
+        });
         // add the user to the connectedUsers map
-        connectedUsers.set(userData._id, {
+        connectedUsers.set(userData._id,{
+            userId:userData._id,
             socketId: socket.id,
             status: "online",
         });
+        
+        const connUsers = Array.from(connectedUsers.values());
+        socket.emit("connectedUsers", connUsers);
         console.log("connected users", connectedUsers);
     });
     // listen for the "join chat" event, which is emitted by the client when they join a chat room
@@ -97,6 +118,8 @@ io.on("connection", (socket) => {
             if (user.socketId === socket.id) {
                 user.status = "offline";
                 connectedUsers.set(userId, user);
+                const connUsers = Array.from(connectedUsers.values());
+                io.emit("connectedUsers", connUsers);
                 console.log(userId + " disconnected");
                 break;
             }

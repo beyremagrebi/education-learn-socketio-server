@@ -130,4 +130,15 @@ io.on("connection", (socket) => {
         console.log("User Disconnected");
         socket.leave(userData._id);
     });
+
+    socket.on('comments',(msg)=>{
+        io.emit("new comments",msg)
+    })
+    socket.on("like", ({ postId, userId }) => {
+        console.log("Like event received:", postId, userId);
+        // Broadcast the 'like' event to all connected clients
+        socket.broadcast.emit("like", { postId, userId });
+      });
+    
+    
 });

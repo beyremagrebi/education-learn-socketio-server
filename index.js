@@ -84,18 +84,18 @@ io.on("connection", (socket) => {
             //find the user in the connectedUsers map
             reciever = connectedUsers.get(user._id);
             //if the user is is offline, undefined, null or false, send them a notification
-            if ((!reciever && user.fcmToken) || (reciever && reciever.status === "offline")) {
-                console.log("sending notification to " + user.firstName + " " + user.lastName)
-                    //send the notification
-                const result = await sendNotificationToUser(
-                    newMessageRecieved.author.firstName + " " + newMessageRecieved.author.lastName + " sent you a message",
-                    newMessageRecieved.text,
-                    user.fcmToken,
-                    "/chat/" + chat._id,
-                    null,
-                    newMessageRecieved.author.imageUrl
-                );
-            }
+            // if ((!reciever && user.fcmToken) || (reciever && reciever.status === "offline")) {
+            //     console.log("sending notification to " + user.firstName + " " + user.lastName)
+            //         //send the notification
+            //     const result = await sendNotificationToUser(
+            //         newMessageRecieved.author.firstName + " " + newMessageRecieved.author.lastName + " sent you a message",
+            //         newMessageRecieved.text,
+            //         user.fcmToken,
+            //         "/chat/" + chat._id,
+            //         null,
+            //         newMessageRecieved.author.imageUrl
+            //     );
+            // }
          const data =  await axios.post("http://localhost:4001/save-notif",{
                 userId:user._id,
                 title:newMessageRecieved.author.firstName + " " + newMessageRecieved.author.lastName + " sent you a message",

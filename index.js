@@ -139,6 +139,16 @@ io.on("connection", (socket) => {
         // Broadcast the 'like' event to all connected clients
         socket.broadcast.emit("like", { postId, userId });
       });
+
+      socket.on("comment", (commentData, idTask) => {
+        console.log(commentData);
+        axios.post(`http://localhost:4003/comment-task/${idTask}`, {
+          comment: commentData,
+        });
+    
+        io.emit("comment", commentData);
+      });
+
     
     
 });

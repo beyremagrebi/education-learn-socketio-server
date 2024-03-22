@@ -124,7 +124,7 @@ io.on("connection", (socket) => {
       text: text,
     };
 
-    axios.post(`${process.evn.MICRO_SOCIEL_MEDIA}/comment/add-comment/${postId}`, postData, axiosConfig)
+    axios.post(`${process.env.MICRO_SOCIEL_MEDIA}/comment/add-comment/${postId}`, postData, axiosConfig)
       .then(response => {
         // Handle the response if needed
         socket.emit('comment-success', response.data);

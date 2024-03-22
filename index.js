@@ -145,7 +145,7 @@ io.on("connection", (socket) => {
     };
 
     try {
-      const response = await axios.post(`${process.evn.MICRO_SOCIEL_MEDIA}/invitation/sendInvi/${userId}`, {}, axiosConfig);
+      const response = await axios.post(`${process.env.MICRO_SOCIEL_MEDIA}/invitation/sendInvi/${userId}`, {}, axiosConfig);
       if (response.status == 200) {
         const user = await getUser(userId);
         const sender = await getUser(senderId);
@@ -219,7 +219,7 @@ io.on("connection", (socket) => {
       if (response.status === 200) {
 
         if (response.data.message != null) {
-          checker = 'reciver'
+          checker = 'receiver'
         }
         else {
           invitations = response.data.Invitations;
@@ -234,6 +234,7 @@ io.on("connection", (socket) => {
       else if (response.status === 202) {
         checker = 'friends'
       }
+      console.log(checker);
       socket.emit('checker-response', checker)
     }
     catch (error) {

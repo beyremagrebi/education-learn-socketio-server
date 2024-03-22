@@ -124,7 +124,7 @@ io.on("connection", (socket) => {
       text: text,
     };
 
-    axios.post(`http://127.0.0.1:4005/comment/add-comment/${postId}`, postData, axiosConfig)
+    axios.post(`${process.evn.MICRO_SOCIEL_MEDIA}/comment/add-comment/${postId}`, postData, axiosConfig)
       .then(response => {
         // Handle the response if needed
         socket.emit('comment-success', response.data);
@@ -145,7 +145,7 @@ io.on("connection", (socket) => {
     };
 
     try {
-      const response = await axios.post(`http://127.0.0.1:4005/invitation/sendInvi/${userId}`, {}, axiosConfig);
+      const response = await axios.post(`${process.evn.MICRO_SOCIEL_MEDIA}/invitation/sendInvi/${userId}`, {}, axiosConfig);
       if (response.status == 200) {
         const user = await getUser(userId);
         const sender = await getUser(senderId);
@@ -162,7 +162,7 @@ io.on("connection", (socket) => {
           `${process.env.MICRO_BACK_URL}/${sender.imageUrl}`
         );
 
-        const responseData = await axios.post("http://localhost:4001/save-notif", {
+        const responseData = await axios.post(`${process.env.MICRO_BACK_URL}/save-notif`, {
           userId: userId,
           title: notificationTitle, // Corrected title format
           body: notificationBody,
@@ -184,7 +184,7 @@ io.on("connection", (socket) => {
       },
     };
     try {
-      const response = await axios.put(`http://127.0.0.1:4005/invitation/cancel/${userId}`, {}, axiosConfig)
+      const response = await axios.put(`${process.env.MICRO_SOCIEL_MEDIA}/invitation/cancel/${userId}`, {}, axiosConfig)
 
       socket.emit('cancel-success', response.data);
     }

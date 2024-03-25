@@ -166,8 +166,9 @@ io.on("connection", (socket) => {
           userId: userId,
           title: notificationTitle, // Corrected title format
           body: notificationBody,
-          image: sender.imageUrl
-
+          image: sender.imageUrl,
+          screen:'/NotificationScreen',
+          type:'invitation'
         })
         socket.emit('invite-success', responseData.data);
       }
@@ -234,7 +235,6 @@ io.on("connection", (socket) => {
       else if (response.status === 202) {
         checker = 'friends'
       }
-      console.log(checker);
       socket.emit('checker-response', checker)
     }
     catch (error) {

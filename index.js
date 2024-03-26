@@ -113,7 +113,8 @@ io.on("connection", (socket) => {
   });
 
   // ------------------------- Sociel Media --------------------------------------
-  socket.on('comment-sm', (postId, text, token) => {
+  socket.on('comment-sm', async (postId, text, userId,ownerId,token) => {
+    console.log(token);
     const axiosConfig = {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -124,16 +125,38 @@ io.on("connection", (socket) => {
       text: text,
     };
 
-    axios.post(`${process.env.MICRO_SOCIEL_MEDIA}/comment/add-comment/${postId}`, postData, axiosConfig)
-      .then(response => {
-        // Handle the response if needed
-        socket.emit('comment-success', response.data);
+    try {
+      const response = await axios.post(`${process.env.MICRO_SOCIEL_MEDIA}/comment/add-comment/${postId}`, postData, axiosConfig);
+      if(response.status==200){
 
-      })
-      .catch(error => {
-        // Handle errors if needed
-        console.error(error);
+        const user =await getUser(ownerId);
+        const sender = await getUser(userId); 
+        const notificationTitle = `${sender.firstName}  ${sender.lastName}`;
+        const notificationBody = 'has commnet your post';
+      await sendNotificationToUser(
+        notificationTitle, // Corrected title format
+        notificationBody,
+        user.fcmToken,
+      );
+    
+        await axios.post(`${process.env.MICRO_BACK_URL}/save-notif`, {
+        userId: ownerId,
+        fromUser: userId,
+        title: notificationTitle, // Corrected title format
+        body: notificationBody,
+        image: sender.imageUrl,
+        screen: '/NotificationScreen',
+        type: 'comment'
       });
+    
+          // Handle the response if needed
+          socket.emit('comment-success', response.data);
+      }
+    } catch (error) {
+      // Handle errors if needed
+      console.error(error);
+    }
+    
   });
 
   socket.on('invitation-sm', async (userId, token, senderId) => { // Add async keyword here
@@ -157,13 +180,11 @@ io.on("connection", (socket) => {
           notificationTitle, // Corrected title format
           notificationBody,
           user.fcmToken,
-          '/NotificationScreen',
-          null,
-          `${process.env.MICRO_BACK_URL}/${sender.imageUrl}`
         );
 
         const responseData = await axios.post(`${process.env.MICRO_BACK_URL}/save-notif`, {
           userId: userId,
+          fromUser:senderId,
           title: notificationTitle, // Corrected title format
           body: notificationBody,
           image: sender.imageUrl,

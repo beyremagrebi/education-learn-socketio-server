@@ -79,8 +79,9 @@ io.on("connection", (socket) => {
     // send the new message to all users in the chat except for the sender
     chat.users.forEach(async (user) => {
       //if the user is the sender, skip them
-      if (user._id === newMessageRecieved.author.id) return;
-      socket.in(user._id).emit("message recieved", JSON.stringify(newMessageRecieved));
+      //if (user._id === newMessageRecieved.author.id) return;
+      console.log('emitting to : message recieved' + user._id)
+      socket.emit("message recieved" + user._id, JSON.stringify(newMessageRecieved));
       //find the user in the connectedUsers map
       reciever = connectedUsers.get(user._id);
       //if the user is is offline, undefined, null or false, send them a notification
@@ -96,13 +97,13 @@ io.on("connection", (socket) => {
       //         newMessageRecieved.author.imageUrl
       //     );
       // }
-      const data = await axios.post("http://localhost:4001/save-notif", {
-        userId: user._id,
-        title: newMessageRecieved.author.firstName + " " + newMessageRecieved.author.lastName + " sent you a message",
-        body: newMessageRecieved.text,
-        screen: "/chat/" + chat._id,
-        image: newMessageRecieved.author.imageUrl
-      })
+      //const data = await axios.post("http://localhost:4001/save-notif", {
+      //  userId: user._id,
+      //  title: newMessageRecieved.author.firstName + " " + newMessageRecieved.author.lastName + " sent you a message",
+      //  body: newMessageRecieved.text,
+      //  screen: "/chat/" + chat._id,
+      //  image: newMessageRecieved.author.imageUrl
+      //})
 
 
 
@@ -113,7 +114,7 @@ io.on("connection", (socket) => {
   });
 
   // ------------------------- Sociel Media --------------------------------------
-  socket.on('comment-sm', async (postId, text, userId,ownerId,token) => {
+  socket.on('comment-sm', async (postId, text, userId, ownerId, token) => {
     console.log(token);
     const axiosConfig = {
       headers: {
@@ -127,36 +128,36 @@ io.on("connection", (socket) => {
 
     try {
       const response = await axios.post(`${process.env.MICRO_SOCIEL_MEDIA}/comment/add-comment/${postId}`, postData, axiosConfig);
-      if(response.status==200){
+      if (response.status == 200) {
 
-        const user =await getUser(ownerId);
-        const sender = await getUser(userId); 
+        const user = await getUser(ownerId);
+        const sender = await getUser(userId);
         const notificationTitle = `${sender.firstName}  ${sender.lastName}`;
         const notificationBody = 'has commnet your post';
-      await sendNotificationToUser(
-        notificationTitle, // Corrected title format
-        notificationBody,
-        user.fcmToken,
-      );
-    
+        await sendNotificationToUser(
+          notificationTitle, // Corrected title format
+          notificationBody,
+          user.fcmToken,
+        );
+
         await axios.post(`${process.env.MICRO_BACK_URL}/save-notif`, {
-        userId: ownerId,
-        fromUser: userId,
-        title: notificationTitle, // Corrected title format
-        body: notificationBody,
-        image: sender.imageUrl,
-        screen: '/NotificationScreen',
-        type: 'comment'
-      });
-    
-          // Handle the response if needed
-          socket.emit('comment-success', response.data);
+          userId: ownerId,
+          fromUser: userId,
+          title: notificationTitle, // Corrected title format
+          body: notificationBody,
+          image: sender.imageUrl,
+          screen: '/NotificationScreen',
+          type: 'comment'
+        });
+
+        // Handle the response if needed
+        socket.emit('comment-success', response.data);
       }
     } catch (error) {
       // Handle errors if needed
       console.error(error);
     }
-    
+
   });
 
   socket.on('invitation-sm', async (userId, token, senderId) => { // Add async keyword here
@@ -184,12 +185,12 @@ io.on("connection", (socket) => {
 
         const responseData = await axios.post(`${process.env.MICRO_BACK_URL}/save-notif`, {
           userId: userId,
-          fromUser:senderId,
+          fromUser: senderId,
           title: notificationTitle, // Corrected title format
           body: notificationBody,
           image: sender.imageUrl,
-          screen:'/NotificationScreen',
-          type:'invitation'
+          screen: '/NotificationScreen',
+          type: 'invitation'
         })
         socket.emit('invite-success', responseData.data);
       }

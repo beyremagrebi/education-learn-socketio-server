@@ -79,9 +79,8 @@ io.on("connection", (socket) => {
     // send the new message to all users in the chat except for the sender
     chat.users.forEach(async (user) => {
       //if the user is the sender, skip them
-      //if (user._id === newMessageRecieved.author.id) return;
-      console.log('emitting to : message recieved' + user._id)
-      socket.emit("message recieved" + user._id, JSON.stringify(newMessageRecieved));
+      if (user._id === newMessageRecieved.author.id) return;
+      socket.in(user._id).emit("message recieved", JSON.stringify(newMessageRecieved));
       //find the user in the connectedUsers map
       reciever = connectedUsers.get(user._id);
       //if the user is is offline, undefined, null or false, send them a notification
@@ -97,13 +96,13 @@ io.on("connection", (socket) => {
       //         newMessageRecieved.author.imageUrl
       //     );
       // }
-      //const data = await axios.post("http://localhost:4001/save-notif", {
-      //  userId: user._id,
-      //  title: newMessageRecieved.author.firstName + " " + newMessageRecieved.author.lastName + " sent you a message",
-      //  body: newMessageRecieved.text,
-      //  screen: "/chat/" + chat._id,
-      //  image: newMessageRecieved.author.imageUrl
-      //})
+      const data = await axios.post("http://localhost:4001/save-notif", {
+        userId: user._id,
+        title: newMessageRecieved.author.firstName + " " + newMessageRecieved.author.lastName + " sent you a message",
+        body: newMessageRecieved.text,
+        screen: "/chat/" + chat._id,
+        image: newMessageRecieved.author.imageUrl
+      })
 
 
 
@@ -330,7 +329,4 @@ io.on("connection", (socket) => {
 
     io.emit("comment", commentData);
   });
-
-
-
 });

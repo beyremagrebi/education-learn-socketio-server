@@ -2,6 +2,7 @@ const sendNotificationToUser = require("./notif.js");
 require('dotenv').config();
 const axios = require('axios')
 const { getUser } = require('./utils/user.js')
+const { mobileController } = require('./controllers/mobile-controller.js')
 
 // create an instance of socket.io and configure it
 const io = require("socket.io")(8800, {
@@ -330,3 +331,5 @@ io.on("connection", (socket) => {
     io.emit("comment", commentData);
   });
 });
+
+mobileController(io)

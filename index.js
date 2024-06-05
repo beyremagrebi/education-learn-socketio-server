@@ -327,9 +327,26 @@ io.on("connection", (socket) => {
     axios.post(`http://localhost:4003/comment-task/${idTask}`, {
       comment: commentData,
     });
-
-    io.emit("comment", commentData);
+  io.emit("comment", commentData);
   });
+
+      socket.on("comment2", (commentData, idTask) => {
+        console.log(commentData);
+        axios.post(`http://localhost:4001/faculty/comment-tache-faculty/${idTask}`, {
+          comment: commentData,
+        });
+        io.emit("comment2", commentData);
+      });
+
+    
+      socket.on("comment3", (commentData, idTask) => {
+        console.log(commentData);
+        axios.post(`http://localhost:4001/training-company/comment-tache-center-formation/${idTask}`, {
+          comment: commentData,
+        });
+        io.emit("comment3", commentData);
+      });
+
 });
 
 mobileController(io)

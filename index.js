@@ -347,8 +347,8 @@ io.on("connection", (socket) => {
     io.emit("comment3", commentData);
   });
 
-  socket.on("accesDeniedForRule", (rule) => {
-    io.emit("accesDeniedForRule", { rule });
+  socket.on("accesDeniedForRule", (rule, userId) => {
+    io.emit("accesDeniedForRule", { rule, userId });
   }
   );
 });

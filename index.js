@@ -3,6 +3,14 @@ require('dotenv').config();
 const axios = require('axios')
 const { getUser } = require('./utils/user.js')
 const { mobileController } = require('./controllers/mobile-controller.js')
+const getTokenFireBase = require('./notifv1.js');
+
+
+
+
+
+
+
 
 // create an instance of socket.io and configure it
 const io = require("socket.io")(8800, {
@@ -13,6 +21,7 @@ const io = require("socket.io")(8800, {
 });
 // create a Map to keep track of connected users
 const connectedUsers = new Map();
+
 // listen for connections to the socket.io server
 io.on("connection", (socket) => {
   socket.on("newConnection", (userId) => {
@@ -112,187 +121,23 @@ io.on("connection", (socket) => {
       console.log("message sent to " + user.firstName + " " + user.lastName)
     });
   });
+  /// ---------------------- mobile chat   ---------------------
 
-  // ------------------------- Sociel Media --------------------------------------
-  socket.on('comment-sm', async (postId, text, userId, ownerId, token) => {
-    console.log(token);
-    const axiosConfig = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    };
-    const postData = {
-      text: text,
-    };
+    socket.on("typing-mobile", (room , userId)=> {
+      console.log("typing here now")
+      io.in(room).emit("typing-mobile",{userId , room})
+    });
 
-    try {
-      const response = await axios.post(`${process.env.MICRO_SOCIEL_MEDIA}/comment/add-comment/${postId}`, postData, axiosConfig);
-      if (response.status == 200) {
+    socket.on("stop-typing-mobile", (room) =>{ io.in(room).emit("stop-typing-mobile")});
 
-        const user = await getUser(ownerId);
-        const sender = await getUser(userId);
-        const notificationTitle = `${sender.firstName}  ${sender.lastName}`;
-        const notificationBody = 'has commnet your post';
-        await sendNotificationToUser(
-          notificationTitle, // Corrected title format
-          notificationBody,
-          user.fcmToken,
-        );
+    socket.on("send-message-mobile", async (room , message,senderId)=> {
+      console.log("new message get it in" + room)
+      io.in(room).emit("message-recieved-mobile",{room,message,senderId})
+    });
 
-        await axios.post(`${process.env.MICRO_BACK_URL}/save-notif`, {
-          userId: ownerId,
-          fromUser: userId,
-          title: notificationTitle, // Corrected title format
-          body: notificationBody,
-          image: sender.imageUrl,
-          screen: '/NotificationScreen',
-          type: 'comment'
-        });
+  /// ----------------------------------------- 
 
-        // Handle the response if needed
-        socket.emit('comment-success', response.data);
-      }
-    } catch (error) {
-      // Handle errors if needed
-      console.error(error);
-    }
 
-  });
-
-  socket.on('invitation-sm', async (userId, token, senderId) => { // Add async keyword here
-    const axiosConfig = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    };
-
-    try {
-      const response = await axios.post(`${process.env.MICRO_SOCIEL_MEDIA}/invitation/sendInvi/${userId}`, {}, axiosConfig);
-      if (response.status == 200) {
-        const user = await getUser(userId);
-        const sender = await getUser(senderId);
-        const notificationTitle = `${sender.firstName}  ${sender.lastName}`;
-        const notificationBody = 'has sent an invitation';
-
-        // Corrected call to sendNotificationToUser function
-        await sendNotificationToUser(
-          notificationTitle, // Corrected title format
-          notificationBody,
-          user.fcmToken,
-        );
-
-        const responseData = await axios.post(`${process.env.MICRO_BACK_URL}/save-notif`, {
-          userId: userId,
-          fromUser: senderId,
-          title: notificationTitle, // Corrected title format
-          body: notificationBody,
-          image: sender.imageUrl,
-          screen: '/NotificationScreen',
-          type: 'invitation'
-        })
-        socket.emit('invite-success', responseData.data);
-      }
-
-    } catch (error) {
-      console.error(error);
-    }
-  });
-  socket.on('cancel-invitation-sm', async (userId, token) => {
-    const axiosConfig = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    };
-    try {
-      const response = await axios.put(`${process.env.MICRO_SOCIEL_MEDIA}/invitation/cancel/${userId}`, {}, axiosConfig)
-
-      socket.emit('cancel-success', response.data);
-    }
-    catch (error) {
-      console.error(error);
-    }
-  });
-
-  socket.on('new-token-device', async (userId, tokenDevice) => {
-    try {
-      await axios.post(`${process.env.MICRO_BACK_URL}/fcm/store-token`, {
-        userId: userId,
-        token: tokenDevice
-      });
-    }
-    catch (err) {
-      console.error(err);
-    }
-  });
-
-  socket.on('check-invitation', async (userId, currentUser, token) => {
-    let checker = null;
-    const axiosConfig = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    };
-    try {
-      const response = await axios.get(`${process.env.MICRO_SOCIEL_MEDIA}/invitation/get-invitations/${userId}`, axiosConfig);
-      let invitations = [];
-      if (response.status === 200) {
-
-        if (response.data.message != null) {
-          checker = 'receiver'
-        }
-        else {
-          invitations = response.data.Invitations;
-          const test = invitations.some(inviObj => inviObj.personID === currentUser);
-          if (test) {
-            checker = 'sender';
-          }
-
-        }
-
-      }
-      else if (response.status === 202) {
-        checker = 'friends'
-      }
-      socket.emit('checker-response', checker)
-    }
-    catch (error) {
-      console.log(error)
-    }
-  });
-  socket.on('accept-invitation', async (userId, token) => {
-    const axiosConfig = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    };
-    try {
-      await axios.post(`${process.env.MICRO_SOCIEL_MEDIA}/friends/acceptInvi/${userId}`, {}, axiosConfig);
-    }
-    catch (error) {
-      console.log(error);
-    }
-  });
-
-  socket.on('remove-friend', async (userId, token) => {
-    const axiosConfig = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    };
-
-    try {
-      await axios.put(`${process.env.MICRO_SOCIEL_MEDIA}/friends/removeFriend/${userId}`, {}, axiosConfig)
-    }
-    catch (err) {
-      console.log(err);
-    }
-  });
   // listen for the "disconnect" event, which is emitted by the client when they disconnect
   socket.on("disconnect", () => {
     // Find the user in the connectedUsers map and set their status to offline

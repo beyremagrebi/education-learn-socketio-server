@@ -1,4 +1,3 @@
-const sendNotificationToUser = require("./notif.js");
 require('dotenv').config();
 const axios = require('axios')
 const { getUser } = require('./utils/user.js')

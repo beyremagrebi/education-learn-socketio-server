@@ -19,7 +19,7 @@ const io = require("socket.io")(8800, {
 });
 // create a Map to keep track of connected users
 const connectedUsers = new Map();
-const connectedUsersByFacilites = new Map();
+
 // listen for connections to the socket.io server
 io.on("connection", (socket) => {
   socket.on("newConnection", (userId) => {
@@ -34,7 +34,7 @@ io.on("connection", (socket) => {
     console.log("new user connected")
   })
 
-  
+
   console.log("connected to socket.io");
   // listen for the "setup" event, which is emitted by the client when they connect
   socket.on("setup", (userData) => {
@@ -70,62 +70,6 @@ io.on("connection", (socket) => {
 
   });
 
-
-  // // ------------------------------------ mobile --------------------------------------------
-
-
-  socket.on('new-connection-by-facilities', (data) => {
-    const { userId,facilityName, fullName, facilityId } = data;
-    let users;
-
-    if (connectedUsersByFacilites.has(facilityId)) {
-      users = connectedUsersByFacilites.get(facilityId);
-    } else {
-      users = [];
-    }
-    const userExists = users.some(user => user.userId === userId);
-    if (!userExists) {
-      users.push({
-        userId: userId,
-        socketId: socket.id,
-        status: "online",
-      });
-      socket.join(facilityId);
-      connectedUsersByFacilites.set(facilityId, users);
-      console.log(`${fullName} => was connected `,data);
-      io.in(facilityId).emit("new-user-connected", connectedUsersByFacilites.get(facilityId));
-    }
-  });
-  
-  
-  
-// Handle custom disconnection by facilities
-socket.on('disconnect-by-facilities', (data) => {
-  const { userId,facilityName, fullName, facilityId } = data;
-
-  if (connectedUsersByFacilites.has(facilityId)) {
-      let users = connectedUsersByFacilites.get(facilityId);
-      const userIndex = users.findIndex(user => user.userId === userId);
-      console.log(userIndex);
-      
-      if (userIndex !== -1) {
-          users.splice(userIndex, 1);
-          if (users.length > 0) {
-              connectedUsersByFacilites.set(facilityId, users);
-          } else {
-              connectedUsersByFacilites.delete(facilityId);
-          }
-          
-
-          console.log(`${fullName} was disconnected From =>`,{facility : facilityName});
-          io.in(facilityId).emit("disconnect-user",connectedUsersByFacilites.get(facilityId));
-          socket.leave(facilityId);
-      }
-  }
-});
-
-
-  
   // listen for the "typing" event, which is emitted by the client when they start typing
   socket.on("typing", (room) => socket.in(room).emit("typing"));
   // listen for the "stop typing" event, which is emitted by the client when they stop typing
@@ -178,23 +122,6 @@ socket.on('disconnect-by-facilities', (data) => {
       console.log("message sent to " + user.firstName + " " + user.lastName)
     });
   });
-  /// ---------------------- mobile chat   ---------------------
-
-    socket.on("typing-mobile", (room , userId)=> {
-      console.log("typing here now")
-      io.in(room).emit("typing-mobile",{userId , room})
-    });
-
-    socket.on("stop-typing-mobile", (room) =>{ io.in(room).emit("stop-typing-mobile")});
-
-    socket.on("send-message-mobile", async (room , message,senderId)=> {
-      console.log("new message get it in" + room)
-      io.in(room).emit("message-recieved-mobile",{room,message,senderId})
-    });
-
-  /// ----------------------------------------- 
-
-
   // listen for the "disconnect" event, which is emitted by the client when they disconnect
   socket.on("disconnect", () => {
     // Find the user in the connectedUsers map and set their status to offline
@@ -253,6 +180,11 @@ socket.on('disconnect-by-facilities', (data) => {
     io.emit("accesDeniedForRule", { rule, userId });
   }
   );
+
+
 });
+
+
+
 
 mobileController(io)

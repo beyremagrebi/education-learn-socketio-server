@@ -101,12 +101,13 @@ io.on("connection", (socket) => {
   
 // Handle custom disconnection by facilities
 socket.on('disconnect-by-facilities', (data) => {
-  const { userId, facilityId } = data;
+  const { userId,facilityName, fullName, facilityId } = data;
 
   if (connectedUsersByFacilites.has(facilityId)) {
       let users = connectedUsersByFacilites.get(facilityId);
       const userIndex = users.findIndex(user => user.userId === userId);
-
+      console.log(userIndex);
+      
       if (userIndex !== -1) {
           users.splice(userIndex, 1);
           if (users.length > 0) {
@@ -114,11 +115,10 @@ socket.on('disconnect-by-facilities', (data) => {
           } else {
               connectedUsersByFacilites.delete(facilityId);
           }
-          io.in(facilityId).emit("disconnect-user", {
-              userId,
-              room: facilityId,
-          });
+          
 
+          console.log(`${fullName} was disconnected From =>`,{facility : facilityName});
+          io.in(facilityId).emit("disconnect-user",connectedUsersByFacilites.get(facilityId));
           socket.leave(facilityId);
       }
   }

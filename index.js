@@ -226,19 +226,43 @@ socket.on('disconnect-by-facilities', (data) => {
 
   socket.on("comment", (commentData, idTask) => {
     console.log(commentData);
-    axios.post(`http://localhost:4003/comment-task/${idTask}`, {
+    axios.post(`${process.env.REACT_APP_BASE_URL}tasks/comment-task/${idTask}`, {
       comment: commentData,
     });
     io.emit("comment", commentData);
   });
 
-  socket.on("comment2", (commentData, idTask) => {
-    console.log(commentData);
-    axios.post(`http://localhost:4001/faculty/comment-tache-faculty/${idTask}`, {
-      comment: commentData,
-    });
-    io.emit("comment2", commentData);
-  });
+      socket.on("comment2", (commentData, idTask,token) => {
+        console.log(commentData);
+        axios.post(`${process.env.REACT_APP_BASE_URL}faculty/comment-tache-faculty/${idTask}`, {
+          comment: commentData,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`, 
+            'Content-Type': 'application/json',
+          }
+        });
+        io.emit("comment2", commentData);
+      });
+
+    
+      socket.on("comment3", (commentData, idTask,token) => {
+        console.log(commentData);
+        axios.post(`${process.env.REACT_APP_BASE_URL}training-company/comment-tache-center-formation/${idTask}`, {
+          comment: commentData,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`, 
+            'Content-Type': 'application/json',
+          }
+        }
+         );
+        io.emit("comment3", commentData);
+      });
+
+
 
 
   socket.on("comment3", (commentData, idTask) => {

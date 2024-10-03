@@ -151,54 +151,34 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("like", { postId, userId });
   });
 
-  socket.on("comment", (commentData, idTask) => {
+  socket.on("commentTask", (commentData, idTask) => {
     console.log(commentData);
     axios.post(`${process.env.REACT_APP_BASE_URL}tasks/comment-task/${idTask}`, {
       comment: commentData,
     });
-    io.emit("comment", commentData);
+    io.emit("commentTask", commentData);
   });
 
-      socket.on("comment2", (commentData, idTask,token) => {
-        console.log(commentData);
-        axios.post(`${process.env.REACT_APP_BASE_URL}faculty/comment-tache-faculty/${idTask}`, {
-          comment: commentData,
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`, 
-            'Content-Type': 'application/json',
-          }
-        });
-        io.emit("comment2", commentData);
-      });
-
-    
-      socket.on("comment3", (commentData, idTask,token) => {
-        console.log(commentData);
-        axios.post(`${process.env.REACT_APP_BASE_URL}training-company/comment-tache-center-formation/${idTask}`, {
-          comment: commentData,
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`, 
-            'Content-Type': 'application/json',
-          }
-        }
-         );
-        io.emit("comment3", commentData);
-      });
-
-
-
-
-  socket.on("comment3", (commentData, idTask) => {
-    console.log(commentData);
-    axios.post(`http://localhost:4001/training-company/comment-tache-center-formation/${idTask}`, {
+  socket.on("commentProjectTache", (commentData, idTask,token, type) => {
+    let endpoint;
+    if(type === "faculty"){
+      endpoint = `${process.env.REACT_APP_BASE_URL}faculty/comment-tache-faculty/${idTask}`;
+    }else if(type === "centreDeFormation"){
+      endpoint = `${process.env.REACT_APP_BASE_URL}training-company/comment-tache-center-formation/${idTask}`
+    }
+    axios.post(endpoint, {
       comment: commentData,
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`, 
+        'Content-Type': 'application/json',
+      }
     });
-    io.emit("comment3", commentData);
+    io.emit("commentProjectTache", commentData);
   });
+
+
 
   socket.on("accesDeniedForRule", (rule, userId) => {
     io.emit("accesDeniedForRule", { rule, userId });

@@ -151,22 +151,22 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("like", { postId, userId });
   });
 
-  socket.on("commentTask", (commentData, idTask) => {
+  socket.on("commentTask", async (commentData, idTask) => {
     console.log(commentData);
-    axios.post(`${process.env.REACT_APP_BASE_URL}tasks/comment-task/${idTask}`, {
+    await axios.post(`${process.env.REACT_APP_BASE_URL}tasks/comment-task/${idTask}`, {
       comment: commentData,
     });
     io.emit("commentTask", commentData);
   });
 
-  socket.on("commentProjectTache", (commentData, idTask,token, type) => {
+  socket.on("commentProjectTache", async (commentData, idTask,token, type) => {
     let endpoint;
     if(type === "faculty"){
       endpoint = `${process.env.REACT_APP_BASE_URL}faculty/comment-tache-faculty/${idTask}`;
     }else if(type === "centreDeFormation"){
       endpoint = `${process.env.REACT_APP_BASE_URL}training-company/comment-tache-center-formation/${idTask}`
     }
-    axios.post(endpoint, {
+    await axios.post(endpoint, {
       comment: commentData,
     },
     {

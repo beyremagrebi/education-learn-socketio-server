@@ -46,17 +46,38 @@ exports.mobileController = (socketio) => {
       }
     });
 
+    userSocket.on("join-chatroom", (room) => {
+      const rooms = userSocket.rooms;
+    
+      if (!rooms.has(room)) {
+        userSocket.join(room);
+        console.log("User Joined Room: " + room);
+        userSocket.emit("joined-chatroom", { room });
+      } 
+    });
+
+    userSocket.on("join-conversation", (room,userId) => {
+      const rooms = userSocket.rooms;
+    
+      if (!rooms.has(room)) {
+        userSocket.join(room);
+        console.log("User Joined Room: " + room);
+        userSocket.emit("joined-conversation", { room ,userId});
+      } 
+    },
+  );
+    
 
     userSocket.on("typing-mobile", (room, userId) => {
       socketio.in(room).emit("typing-mobile", { userId, room })
     });
 
 
-    userSocket.on("stop-typing-mobile", (room) => { socketio.in(room).emit("stop-typing-mobile") });
+    userSocket.on("stop-typing-mobile", (room) => { socketio.in(room).emit("stop-typing-mobile",{room}) });
 
 
-    userSocket.on("send-message-mobile", async (room, message, senderId) => {
-      socketio.in(room).emit("message-recieved-mobile", { room, message, senderId })
+    userSocket.on("send-message-mobile", async (room, message, senderId,recieverId) => {
+      socketio.in(room).emit("message-recieved-mobile", { room, message, senderId,recieverId })
     });
 
 

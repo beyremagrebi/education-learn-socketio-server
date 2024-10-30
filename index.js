@@ -151,30 +151,34 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("like", { postId, userId });
   });
 
-  socket.on("comment", (commentData, idTask) => {
+  socket.on("commentTask", async (commentData, idTask) => {
     console.log(commentData);
-    axios.post(`http://localhost:4003/comment-task/${idTask}`, {
+    await axios.post(`${process.env.REACT_APP_BASE_URL}tasks/comment-task/${idTask}`, {
       comment: commentData,
     });
-    io.emit("comment", commentData);
+    io.emit("commentTask", commentData);
   });
 
-  socket.on("comment2", (commentData, idTask) => {
-    console.log(commentData);
-    axios.post(`http://localhost:4001/faculty/comment-tache-faculty/${idTask}`, {
+  socket.on("commentProjectTache", async (commentData, idTask,token, type) => {
+    let endpoint;
+    if(type === "faculty"){
+      endpoint = `${process.env.REACT_APP_BASE_URL}faculty/comment-tache-faculty/${idTask}`;
+    }else if(type === "centreDeFormation"){
+      endpoint = `${process.env.REACT_APP_BASE_URL}training-company/comment-tache-center-formation/${idTask}`
+    }
+    await axios.post(endpoint, {
       comment: commentData,
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`, 
+        'Content-Type': 'application/json',
+      }
     });
-    io.emit("comment2", commentData);
+    io.emit("commentProjectTache", commentData);
   });
 
 
-  socket.on("comment3", (commentData, idTask) => {
-    console.log(commentData);
-    axios.post(`http://localhost:4001/training-company/comment-tache-center-formation/${idTask}`, {
-      comment: commentData,
-    });
-    io.emit("comment3", commentData);
-  });
 
   socket.on("accesDeniedForRule", (rule, userId) => {
     io.emit("accesDeniedForRule", { rule, userId });

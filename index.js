@@ -1,6 +1,6 @@
 require('dotenv').config();
 const axios = require('axios')
-const { getUser } = require('./utils/user.js')
+
 const { mobileController } = require('./controllers/mobile-controller.js')
 
 

@@ -4,12 +4,6 @@ const axios = require('axios')
 const { mobileController } = require('./controllers/mobile-controller.js')
 
 
-
-
-
-//merge
-
-
 // create an instance of socket.io and configure it
 const io = require("socket.io")(8800, {
   pingTimeout: 60000, // set the ping timeout to 60 seconds

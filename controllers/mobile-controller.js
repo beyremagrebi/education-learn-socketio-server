@@ -25,7 +25,6 @@ exports.mobileController = (socketio) => {
       }
     });
 
-
     userSocket.on('disconnect-by-facilities', (data) => {
       const { userId, facilityName, fullName, facilityId } = data;
 
@@ -56,18 +55,6 @@ exports.mobileController = (socketio) => {
       } 
     });
 
-    userSocket.on("join-conversation", (room,userId) => {
-      const rooms = userSocket.rooms;
-    
-      if (!rooms.has(room)) {
-        userSocket.join(room);
-        console.log("User Joined Room: " + room);
-        userSocket.emit("joined-conversation", { room ,userId});
-      } 
-    },
-  );
-    
-
     userSocket.on("typing-mobile", (room, userId) => {
       socketio.in(room).emit("typing-mobile", { userId, room })
     });
@@ -76,10 +63,22 @@ exports.mobileController = (socketio) => {
     userSocket.on("stop-typing-mobile", (room) => { socketio.in(room).emit("stop-typing-mobile",{room}) });
 
 
-    userSocket.on("send-message-mobile", async (room, message, senderId,recieverId) => {
-      socketio.in(room).emit("message-recieved-mobile", { room, message, senderId,recieverId })
+    userSocket.on("send-message-mobile", async (message,chatId,userId , senderId) => {
+      socketio.in(userId).emit("message-recieved-mobile",{userId , message , chatId ,senderId})
     });
 
+    userSocket.on("read-message", (room, userId,messageId) => {
+      socketio.in(room).emit("message-readed", { userId, room,messageId })
+    });
+
+    userSocket.on("join-chat-screen", (userId) => {
+      const rooms = userSocket.rooms;
+      if (!rooms.has(userId)) {
+        userSocket.join(userId);
+        console.log("User Joined chat-screen: " + userId);
+        userSocket.emit("joined-chat-screen", { userId });
+      } 
+    });
 
   })
 }

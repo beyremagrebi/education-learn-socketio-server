@@ -87,7 +87,7 @@ exports.mobileController = (socketio) => {
       socketio.in(room).emit("typing-mobile", { userId, room })
     });
 
-    userSocket.on("stop-typing-mobile", (room) => { socketio.in(room).emit("stop-typing-mobile", { room }) });
+    userSocket.on("stop-typing-mobile", (room,userId) => { socketio.in(room).emit("stop-typing-mobile", { room ,userId}) });
 
     userSocket.on("check-private-room", async (chatId, userId) => {
       socketio.in(userId).emit("update-private-room", { chatId })

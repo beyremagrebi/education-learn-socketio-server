@@ -60,10 +60,6 @@ exports.mobileController = (socketio) => {
       } 
     });
 
-
-
- 
-
     userSocket.on("join-chatroom", (room) => {
       const rooms = userSocket.rooms;
     
